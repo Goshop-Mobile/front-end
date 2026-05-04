@@ -1,6 +1,8 @@
 import axios, { AxiosError } from 'axios';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+//le seule env que t'aura après deploy
+
 
 export const api = axios.create({
   baseURL: BASE_URL,
