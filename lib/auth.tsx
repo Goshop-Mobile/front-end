@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { AdminUser } from '@/types';
 import { api, TokenStore } from '@/lib/api';
-import { jwtDecode } from 'jose';
 
 interface AuthContextValue {
   user: AdminUser | null;
