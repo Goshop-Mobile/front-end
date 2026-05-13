@@ -35,10 +35,13 @@ export default function SettingsPage() {
             break;
           case "credits_per_order":
             cleanData.push({ key: 'credits_per_order',       value: config.value,    description: 'Coût en crédits par commande acceptée',   icon: <CreditCard className="w-4 h-4 text-blue-400" />, label: 'Crédits déduits par commande',      type: 'number' })
+            break;
           case "referral_credits_reward":
             cleanData.push({ key: 'referral_credits_reward', value: config.value,   description: 'Crédits offerts par parrainage',          icon: <GitBranch className="w-4 h-4 text-green-400" />, label: 'Crédits par parrainage',            type: 'number' })
+            break;
           case "min_credits_to_go_online":
             cleanData.push({ key: 'min_credits_to_go_online','value': config.value,  description: 'Crédits minimum pour passer en ligne',    icon: <Coins className="w-4 h-4 text-orange-400" />,   label: 'Crédits minimum pour aller en ligne', type: 'number' })
+            break;
           default:
             break;
         }
@@ -79,8 +82,8 @@ export default function SettingsPage() {
           </h3>
           <div className="space-y-4">
             {loading ? Array.from({length:4}).map((_,i) => <div key={i} className="skeleton h-16 rounded-xl" />) :
-              configs.map((config) => (
-                <div key={config.key} className="flex items-end gap-3 p-4 rounded-xl" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+              configs.map((config, index) => (
+                <div key={index} className="flex items-end gap-3 p-4 rounded-xl" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
                   <div className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'var(--glass-bg)' }}>
                     {config.icon}
                   </div>
