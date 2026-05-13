@@ -150,7 +150,7 @@ export const referralsApi = {
 
 // ─── Config endpoints ─────────────────────────────────────────────────────────
 export const configApi = {
-  list:   () => api.get('/admin/configs'),
+  list:   () => api.get('/configs'),
   update: (key: string, value: string, description?: string) =>
     api.patch(`/admin/config/${key}`, { value, description }),
 };
