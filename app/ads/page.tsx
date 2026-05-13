@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Megaphone, Plus, Eye, MousePointer, Bell, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Megaphone, Plus, Eye, MousePointer, Bell, Loader2, Image as ImageIcon,PenLine,StretchVerticalIcon, Ban } from 'lucide-react';
 import { adsApi } from '@/lib/api';
 import { Ad } from '@/types';
 import { GlassCard, EmptyState, Modal, Input, Textarea } from '@/components/ui';
@@ -34,8 +34,26 @@ export default function AdsPage() {
   const [loading, setLoading]   = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [isAdSet, setIsAdSet]= useState(false);
+  const [currentPubId, setCurrentPubId] = useState<string| null>(null);
+  const [currentAds, setCurrentAds] = useState<Ad | null>(null);
   const [createdId, setCreatedId]   = useState<string | null>(null);
   const [imageFile, setImageFile]   = useState<File | null>(null);
+  const [isConfirm, setIsConfirm]  = useState<boolean>(false);
+
+  const deleteAds = ()=>{
+    console.log("message");
+    if (!currentPubId){
+      setIsConfirm(false);
+      return ;
+    }
+    
+    setDeleting(true);
+    setTimeout(() => {
+      setDeleting(false);
+    },5000);
+  }
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -107,7 +125,18 @@ export default function AdsPage() {
                     <div className="flex-1 p-4">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <h3 className="font-display font-700 text-base" style={{ color: 'var(--text-primary)' }}>{ad.title}</h3>
-                        <span className={`badge ${s.cls} flex-shrink-0`}>{s.label}</span>
+                        <div className='flex space-y-2 flex-col'>
+                          <span className={`badge ${s.cls} flex-shrink-0`}>{s.label}</span>
+                          <div className='space-x-2'>
+                            <span className={`badge badge-gray w-8`}
+                              onClick={()=>{setCurrentAds(ad);setIsAdSet(true)}}
+                            ><PenLine/></span>
+                            <span className={`badge badge-red w-8`}
+                              onClick={()=>{setIsConfirm(true); setCurrentPubId(ad.id)}}>
+                                <Ban/> </span>
+                          </div>
+                          
+                        </div>
                       </div>
                       {ad.body && <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>{ad.body}</p>}
                       <div className="flex flex-wrap items-center gap-4 text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -154,6 +183,58 @@ export default function AdsPage() {
             </button>
           </div>
         </form>
+      </Modal>
+      <Modal open={isConfirm} onClose={()=>setIsConfirm(false)} title="Etes vous sûr de vouloir supprimer cette Publicitée" maxWidth='max-w-lg'>
+        <div className="space-y-4">
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                Êtes-vous sûr de vouloir Supprimer cette pub ?
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setIsConfirm(false)} className="btn-glass flex-1 py-2.5 rounded-xl text-sm">
+                Annuler
+              </button>
+              <button
+                onClick={() => deleteAds()}
+                disabled={deleting}
+                className={`flex-1 py-2.5 rounded-xl text-sm font-600 btn-danger`}
+              >
+                {deleting ? <span className="">...</span>
+                  : "Supprimer"
+                }
+              </button>
+            </div>
+          </div>
+      </Modal>
+      <Modal open={isAdSet} onClose={()=>{setIsAdSet(false); setCurrentAds(null)}} title='Detailles sur la publicité' over>
+        {currentAds && <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <Input label="Titre *" placeholder="Titre de la bannière" {...register('title')} error={errors.title?.message} value={currentAds.title} />
+          <Textarea label="Texte (optionnel)" placeholder="Description de la bannière" rows={2} {...register('body')} value={currentAds.body??""}/>
+          <Input label="Lien URL (optionnel)" placeholder="https://…" {...register('link_url')} error={errors.link_url?.message} value={currentAds.link_url??""} />
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Durée d'affichage (sec)" type="number" {...register('display_duration_seconds')} value={currentAds.display_duration_seconds}/>
+            <Input label="Date programmée" type="datetime-local" {...register('scheduled_at')} value={currentAds.scheduled_at??undefined}/>
+          </div>
+          <Input label="Date d'expiration" type="datetime-local" {...register('expires_at')} value={currentAds.expires_at??undefined}/>
+          {/* Image upload */}
+          <div>
+            <label className="block text-xs font-600 uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>Image</label>
+            <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files?.[0] || null)}
+              className="input-glass w-full rounded-xl px-4 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:text-xs file:py-1 file:px-2 file:cursor-pointer" />
+            {currentAds.image_url && <img src={currentAds.image_url} alt={currentAds.title} />}
+
+          </div>
+          {/* Send push */}
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" {...register('send_push')} className="w-4 h-4 rounded accent-blue-600" defaultChecked={currentAds.push_sent}/>
+            <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Envoyer une notification push</span>
+          </label>
+          <div className="flex gap-2 pt-2">
+            <button type="button" onClick={() => {setIsAdSet(false); setCurrentAds(null)}} className="btn-glass flex-1 py-2.5 rounded-xl text-sm">Annuler</button>
+            <button type="submit" disabled={submitting} className="btn-primary flex-1 py-2.5 rounded-xl text-sm font-600 flex items-center justify-center gap-2">
+              {submitting && <Loader2 className="w-4 h-4 animate-spin" />} Modifier
+            </button>
+          </div>
+        </form>}
       </Modal>
     </div>
   );

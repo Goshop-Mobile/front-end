@@ -9,6 +9,8 @@ import toast from 'react-hot-toast';
 
 interface ConfigItem { key: string; value: string; description: string; icon: React.ReactNode; label: string; type?: string; }
 
+export interface reciveConfigItem {key : string, value : string; description : string}
+
 const DEFAULT_CONFIGS: ConfigItem[] = [
   { key: 'credit_price_fcfa',       value: '500',  description: 'Prix d\'un crédit en FCFA',               icon: <Coins className="w-4 h-4 text-yellow-400" />,  label: 'Prix d\'un crédit (FCFA)',           type: 'number' },
   { key: 'credits_per_order',       value: '1',    description: 'Coût en crédits par commande acceptée',   icon: <CreditCard className="w-4 h-4 text-blue-400" />, label: 'Crédits déduits par commande',      type: 'number' },
@@ -24,10 +26,24 @@ export default function SettingsPage() {
   const fetch = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await configApi.list();
-      const fetched: Record<string, string> = {};
-      (Array.isArray(data) ? data : []).forEach((c: any) => { fetched[c.key] = c.value; });
-      setConfigs(prev => prev.map(c => ({ ...c, value: fetched[c.key] ?? c.value })));
+      const { data } : {data : reciveConfigItem[]} = await configApi.list();
+      let cleanData : ConfigItem[] =[];
+      data.forEach((config)=>{
+        switch (config.key) {
+          case "credit_price_fcfa":
+            cleanData.push({ key: 'credit_price_fcfa',value: config.value,  description: 'Prix d\'un crédit en FCFA',icon: <Coins className="w-4 h-4 text-yellow-400" />,  label: 'Prix d\'un crédit (FCFA)',type: 'number' })
+            break;
+          case "credits_per_order":
+            cleanData.push({ key: 'credits_per_order',       value: config.value,    description: 'Coût en crédits par commande acceptée',   icon: <CreditCard className="w-4 h-4 text-blue-400" />, label: 'Crédits déduits par commande',      type: 'number' })
+          case "referral_credits_reward":
+            cleanData.push({ key: 'referral_credits_reward', value: config.value,   description: 'Crédits offerts par parrainage',          icon: <GitBranch className="w-4 h-4 text-green-400" />, label: 'Crédits par parrainage',            type: 'number' })
+          case "min_credits_to_go_online":
+            cleanData.push({ key: 'min_credits_to_go_online','value': config.value,  description: 'Crédits minimum pour passer en ligne',    icon: <Coins className="w-4 h-4 text-orange-400" />,   label: 'Crédits minimum pour aller en ligne', type: 'number' })
+          default:
+            break;
+        }
+      })
+      setConfigs(cleanData);
     } catch { /* use defaults */ }
     finally { setLoading(false); }
   }, []);

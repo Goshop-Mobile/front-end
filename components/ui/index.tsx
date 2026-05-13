@@ -188,18 +188,19 @@ export function Pagination({
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
 export function Modal({
-  open, onClose, title, children, maxWidth = 'max-w-lg'
+  open, onClose, title, children, maxWidth = 'max-w-lg',over=false
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
   maxWidth?: string;
+  over?: boolean;
 }) {
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4`}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <motion.div
@@ -215,6 +216,7 @@ export function Modal({
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
         transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
         className={cn('glass-xl rounded-2xl p-6 relative z-10 w-full noise', maxWidth)}
+
       >
         <div className="flex items-center justify-between mb-5">
           <h3 className="font-display font-700 text-base" style={{ color: 'var(--text-primary)' }}>{title}</h3>
@@ -226,7 +228,9 @@ export function Modal({
             ✕
           </button>
         </div>
-        {children}
+        <div className={`${over && 'overflow-y-hidden'}`}>
+          {children}
+        </div>
       </motion.div>
     </div>
   );
